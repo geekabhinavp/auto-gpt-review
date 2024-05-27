@@ -50,7 +50,7 @@ def post_review_comments(comments, file_path, pr_number):
         requests.post(url, headers=headers, data=json.dumps(data))
 
 def main():
-    pr_number = input("Enter the Pull Request number: ")
+    pr_number = os.getenv('PR_NUMBER')
     pr_files = fetch_pr_files(pr_number)
     for file in pr_files:
         if file['status'] == 'modified':
