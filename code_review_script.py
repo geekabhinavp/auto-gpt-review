@@ -9,7 +9,7 @@ REPO_NAME = 'auto-gpt-review'
 
 # GPT API details
 GPT_API_KEY = os.getenv('GPT_API_KEY')
-GPT_API_URL = 'https://api.openai.com/v1/engines/davinci-codex/completions'
+GPT_API_URL = 'https://api.openai.com/v1/chat/completions'
 
 # Fetch pull request files
 def fetch_pr_files(pr_number):
@@ -18,6 +18,7 @@ def fetch_pr_files(pr_number):
         'Accept': 'application/vnd.github.v3+json'
     }
     url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_number}/files'
+    print(f"Requesting URL: {url}")
     response = requests.get(url, headers=headers)
     if response.status_code != 200:
         print(f"Error fetching PR files: {response.json()}")
@@ -31,11 +32,18 @@ def send_code_to_gpt(code):
         'Content-Type': 'application/json'
     }
     data = {
-        'prompt': f'Review the following code for best practices and potential issues:\n\n{code}',
+        'model': 'gpt-3.5-turbo',
+        'messages': [
+            {'role': 'system', 'content': 'You are a helpful assistant.'},
+            {'role': 'user', 'content': code}
+        ],
         'max_tokens': 200,
-        'temperature': 0.5
+        'temperature': 0.7
     }
     response = requests.post(GPT_API_URL, headers=headers, data=json.dumps(data))
+    if response.status_code != 200:
+        print(f"Error from GPT API: {response.json()}")
+        return None
     return response.json()
 
 # Post review comments on GitHub
@@ -78,7 +86,10 @@ def main():
             file_response = requests.get(file['raw_url'])
             code = file_response.text
             gpt_response = send_code_to_gpt(code)
-            comments = gpt_response['choices'][0]['text'].strip().split('\n')
+            if gpt_response is None or 'choices' not in gpt_response:
+                print(f"Error: Unexpected GPT API response: {gpt_response}")
+                continue
+            comments = gpt_response['choices'][0]['message']['content'].strip().split('\n')
             post_review_comments(comments, file['filename'], pr_number)
 
 if __name__ == "__main__":
