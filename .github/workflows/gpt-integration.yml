@@ -1,6 +1,8 @@
 name: Automated Code Review
 
-on: [pull_request]
+on:
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
   code-review:
@@ -22,6 +24,7 @@ jobs:
 
     - name: Run code review script
       env:
-        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GPT_API_KEY: ${{ secrets.GPT_API_KEY }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
       run: python code_review_script.py
