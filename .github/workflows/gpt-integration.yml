@@ -24,4 +24,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
         GPT_API_KEY: ${{ secrets.GPT_API_KEY }}
-      run: python path/to/your/code_review_script.py
+      run: python /code_review_script.py
