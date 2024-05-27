@@ -14,10 +14,14 @@ GPT_API_URL = 'https://api.openai.com/v1/engines/davinci-codex/completions'
 # Fetch pull request files
 def fetch_pr_files(pr_number):
     headers = {
-        'Authorization': f'token {GIT_TOKEN}'
+        'Authorization': f'token {GIT_TOKEN}',
+        'Accept': 'application/vnd.github.v3+json'
     }
     url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_number}/files'
     response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        print(f"Error fetching PR files: {response.json()}")
+        return None
     return response.json()
 
 # Send code to GPT for review
@@ -60,13 +64,17 @@ def main():
         raise ValueError("Pull Request number is not set in the environment variables.")
     
     pr_files = fetch_pr_files(pr_number)
+    if pr_files is None:
+        print("Failed to fetch PR files. Exiting.")
+        return
+
     # Debugging: Print the fetched pull request files
     print(f"Fetched PR files: {pr_files}")
 
     for file in pr_files:
         # Debugging: Print each file object
         print(f"Processing file: {file}")
-        if file['status'] == 'modified':
+        if file.get('status') == 'modified':
             file_response = requests.get(file['raw_url'])
             code = file_response.text
             gpt_response = send_code_to_gpt(code)
