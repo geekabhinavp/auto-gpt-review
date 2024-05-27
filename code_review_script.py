@@ -3,7 +3,7 @@ import json
 import os
 
 # GitHub repository details
-GITHUB_TOKEN = os.getenv('GIT_TOKEN')
+GIT_TOKEN = os.getenv('GIT_TOKEN')
 REPO_OWNER = 'knackofabhi'
 REPO_NAME = 'gpt-review'
 
@@ -14,7 +14,7 @@ GPT_API_URL = 'https://api.openai.com/v1/engines/davinci-codex/completions'
 # Fetch pull request files
 def fetch_pr_files(pr_number):
     headers = {
-        'Authorization': f'token {GITHUB_TOKEN}'
+        'Authorization': f'token {GIT_TOKEN}'
     }
     url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_number}/files'
     response = requests.get(url, headers=headers)
@@ -37,7 +37,7 @@ def send_code_to_gpt(code):
 # Post review comments on GitHub
 def post_review_comments(comments, file_path, pr_number):
     headers = {
-        'Authorization': f'token {GITHUB_TOKEN}',
+        'Authorization': f'token {GIT_TOKEN}',
         'Accept': 'application/vnd.github.v3+json'
     }
     url = f'https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/pulls/{pr_number}/comments'
@@ -50,12 +50,22 @@ def post_review_comments(comments, file_path, pr_number):
         requests.post(url, headers=headers, data=json.dumps(data))
 
 def main():
+    # Debugging: Print environment variables
+    print(f"GIT_TOKEN: {GIT_TOKEN}")
+    print(f"GPT_API_KEY: {GPT_API_KEY}")
+    print(f"PR_NUMBER: {os.getenv('PR_NUMBER')}")
+    
     pr_number = os.getenv('PR_NUMBER')
     if not pr_number:
         raise ValueError("Pull Request number is not set in the environment variables.")
     
     pr_files = fetch_pr_files(pr_number)
+    # Debugging: Print the fetched pull request files
+    print(f"Fetched PR files: {pr_files}")
+
     for file in pr_files:
+        # Debugging: Print each file object
+        print(f"Processing file: {file}")
         if file['status'] == 'modified':
             file_response = requests.get(file['raw_url'])
             code = file_response.text
