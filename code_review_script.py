@@ -4,7 +4,7 @@ import os
 
 # GitHub repository details
 GIT_TOKEN = os.getenv('GIT_TOKEN')
-REPO_OWNER = 'knackofabhi'
+REPO_OWNER = 'geekabhinavp'
 REPO_NAME = 'gpt-review'
 
 # GPT API details
