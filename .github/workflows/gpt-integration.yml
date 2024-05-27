@@ -25,12 +25,14 @@ jobs:
     - name: Print environment variables for debugging
       run: |
         echo "PR_NUMBER: $PR_NUMBER"
+        echo "GIT_TOKEN: $GIT_TOKEN"
       env:
         PR_NUMBER: ${{ github.event.pull_request.number }}
+        GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
 
     - name: Run code review script
       env:
-        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}
+        GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
         GPT_API_KEY: ${{ secrets.GPT_API_KEY }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: python code_review_script.py
